@@ -1,20 +1,7 @@
-// Copyright 2018 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -99,7 +86,7 @@ func find(filename string) (string, error) {
 		return filename, nil
 	}
 
-	path := filepath.Join(gopath, "src", "github.com", "rtr7", "kernel", filename)
+	path := filepath.Join(gopath, "src", "development.thatwebsite.xyz", "gokrazy", "kernel-amd64", filename)
 	if _, err := os.Stat(path); err == nil {
 		return path, nil
 	}
@@ -107,18 +94,48 @@ func find(filename string) (string, error) {
 	return "", fmt.Errorf("could not find file %q (looked in . and %s)", filename, path)
 }
 
+func getContainerExecutable() (string, error) {
+	// Probe podman first, because the docker binary might actually
+	// be a thin podman wrapper with podman behavior.
+	choices := []string{"podman", "docker"}
+	for _, exe := range choices {
+		p, err := exec.LookPath(exe)
+		if err != nil {
+			continue
+		}
+		resolved, err := filepath.EvalSymlinks(p)
+		if err != nil {
+			return "", err
+		}
+		return resolved, nil
+	}
+	return "", fmt.Errorf("none of %v found in $PATH", choices)
+}
+
 func main() {
+	var overwriteContainerExecutable = flag.String("overwrite_container_executable",
+		"",
+		"E.g. docker or podman to overwrite the automatically detected container executable")
+	flag.Parse()
+	executable, err := getContainerExecutable()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if *overwriteContainerExecutable != "" {
+		executable = *overwriteContainerExecutable
+	}
+	execName := filepath.Base(executable)
 	// We explicitly use /tmp, because Docker only allows volume mounts under
 	// certain paths on certain platforms, see
 	// e.g. https://docs.docker.com/docker-for-mac/osxfs/#namespaces for macOS.
-	tmp, err := ioutil.TempDir("/tmp", "gokr-rebuild-kernel")
+	tmp, err := ioutil.TempDir("/tmp", "rtr7-rebuild-kernel")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(tmp)
 
 	cmd := exec.Command("go", "install", "development.thatwebsite.xyz/gokrazy/kernel-amd64/cmd/rtr7-build-kernel")
-	cmd.Env = append(os.Environ(), "GOOS=linux", "GOBIN="+tmp)
+	cmd.Env = append(os.Environ(), "GOOS=linux", "GOBIN="+tmp, "CGO_ENABLED=0")
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("%v: %v", cmd.Args, err)
@@ -175,9 +192,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("building docker container for kernel compilation")
+	log.Printf("building %s container for kernel compilation", execName)
 
-	dockerBuild := exec.Command("podman",
+	dockerBuild := exec.Command(execName,
 		"build",
 		"--rm=true",
 		"--tag=rtr7-rebuild-kernel",
@@ -186,21 +203,31 @@ func main() {
 	dockerBuild.Stdout = os.Stdout
 	dockerBuild.Stderr = os.Stderr
 	if err := dockerBuild.Run(); err != nil {
-		log.Fatalf("docker build: %v (cmd: %v)", err, dockerBuild.Args)
+		log.Fatalf("%s build: %v (cmd: %v)", execName, err, dockerBuild.Args)
 	}
 
 	log.Printf("compiling kernel")
 
-	dockerRun := exec.Command("podman",
-		"run",
-		"--rm",
-		"--volume", tmp+":/tmp/buildresult",
-		"rtr7-rebuild-kernel")
+	var dockerRun *exec.Cmd
+	if execName == "podman" {
+		dockerRun = exec.Command(executable,
+			"run",
+			"--userns=keep-id",
+			"--rm",
+			"--volume", tmp+":/tmp/buildresult:Z",
+			"gokr-rebuild-kernel")
+	} else {
+		dockerRun = exec.Command(executable,
+			"run",
+			"--rm",
+			"--volume", tmp+":/tmp/buildresult:Z",
+			"gokr-rebuild-kernel")
+	}
 	dockerRun.Dir = tmp
 	dockerRun.Stdout = os.Stdout
 	dockerRun.Stderr = os.Stderr
 	if err := dockerRun.Run(); err != nil {
-		log.Fatalf("docker run: %v (cmd: %v)", err, dockerRun.Args)
+		log.Fatalf("%s run: %v (cmd: %v)", execName, err, dockerRun.Args)
 	}
 
 	if err := copyFile(kernelPath, filepath.Join(tmp, "vmlinuz")); err != nil {

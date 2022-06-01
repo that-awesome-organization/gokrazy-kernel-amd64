@@ -1,17 +1,3 @@
-// Copyright 2018 Google Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 package main
 
 import (
@@ -158,7 +144,7 @@ CONFIG_SENSORS_NCT6683=y
 # For Corsair Commander Pro fan controller:
 CONFIG_SENSORS_CORSAIR_CPRO=y
 
-# For iproute2’s ss(8):
+# For iproute2's ss(8):
 CONFIG_INET_DIAG=y
 
 # For macvlan ethernet devices:
@@ -198,6 +184,7 @@ CONFIG_CGROUP_FREEZER=y
 CONFIG_CGROUP_BPF=y
 CONFIG_SOCK_CGROUP_DATA=y
 CONFIG_NET_SOCK_MSG=y
+
 # For podman:
 CONFIG_OVERLAY_FS=y
 CONFIG_BRIDGE=y
@@ -216,6 +203,12 @@ CONFIG_CGROUP_PIDS=y
 CONFIG_TCP_CONG_BBR=y
 CONFIG_DEFAULT_BBR=y
 CONFIG_DEFAULT_TCP_CONG="bbr"
+
+# For different FS
+CONFIG_EXFAT_FS=y
+CONFIG_BTRFS_FS=y
+CONFIG_XFS_FS=y
+CONFIG_XFS_SUPPORT_V4=y
 `
 
 func downloadKernel() error {
@@ -294,7 +287,7 @@ func compile() error {
 	make := exec.Command("make", "bzImage", "-j"+strconv.Itoa(runtime.NumCPU()))
 	make.Env = append(os.Environ(),
 		"KBUILD_BUILD_USER=gokrazy",
-		"KBUILD_BUILD_HOST=docker",
+		"KBUILD_BUILD_HOST=worker.thatwebsite.xyz",
 		"KBUILD_BUILD_TIMESTAMP=Wed Mar  1 20:57:29 UTC 2017",
 	)
 	make.Stdout = os.Stdout
@@ -340,7 +333,10 @@ func main() {
 	}
 
 	log.Printf("unpacking kernel source")
-	if err := exec.Command("tar", "xf", filepath.Base(latest)).Run(); err != nil {
+	untar := exec.Command("tar", "xf", filepath.Base(latest))
+	untar.Stdout = os.Stdout
+	untar.Stderr = os.Stderr
+	if err := untar.Run(); err != nil {
 		log.Fatalf("untar: %v", err)
 	}
 
