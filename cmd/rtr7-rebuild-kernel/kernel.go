@@ -215,13 +215,13 @@ func main() {
 			"--userns=keep-id",
 			"--rm",
 			"--volume", tmp+":/tmp/buildresult:Z",
-			"gokr-rebuild-kernel")
+			"rtr7-rebuild-kernel")
 	} else {
 		dockerRun = exec.Command(executable,
 			"run",
 			"--rm",
 			"--volume", tmp+":/tmp/buildresult:Z",
-			"gokr-rebuild-kernel")
+			"rtr7-rebuild-kernel")
 	}
 	dockerRun.Dir = tmp
 	dockerRun.Stdout = os.Stdout
