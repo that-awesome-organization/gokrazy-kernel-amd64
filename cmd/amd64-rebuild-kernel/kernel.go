@@ -19,7 +19,7 @@ FROM debian:stretch
 
 RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex libelf-dev ncurses-dev
 
-COPY rtr7-build-kernel /usr/bin/rtr7-build-kernel
+COPY amd64-build-kernel /usr/bin/amd64-build-kernel
 {{- range $idx, $path := .Patches }}
 COPY {{ $path }} /usr/src/{{ $path }}
 {{- end }}
@@ -29,7 +29,7 @@ RUN echo 'builduser:x:{{ .Uid }}:{{ .Gid }}:nobody:/:/bin/sh' >> /etc/passwd && 
 
 USER builduser
 WORKDIR /usr/src
-ENTRYPOINT /usr/bin/rtr7-build-kernel
+ENTRYPOINT /usr/bin/amd64-build-kernel
 `
 
 var dockerFileTmpl = template.Must(template.New("dockerfile").
@@ -126,20 +126,20 @@ func main() {
 	// We explicitly use /tmp, because Docker only allows volume mounts under
 	// certain paths on certain platforms, see
 	// e.g. https://docs.docker.com/docker-for-mac/osxfs/#namespaces for macOS.
-	tmp, err := ioutil.TempDir("/tmp", "rtr7-rebuild-kernel")
+	tmp, err := ioutil.TempDir("/tmp", "amd64-rebuild-kernel")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer os.RemoveAll(tmp)
 
-	cmd := exec.Command("go", "install", "development.thatwebsite.xyz/gokrazy/kernel-amd64/cmd/rtr7-build-kernel")
+	cmd := exec.Command("go", "install", "development.thatwebsite.xyz/gokrazy/kernel-amd64/cmd/amd64-build-kernel")
 	cmd.Env = append(os.Environ(), "GOOS=linux", "GOBIN="+tmp, "CGO_ENABLED=0")
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
 		log.Fatalf("%v: %v", cmd.Args, err)
 	}
 
-	buildPath := filepath.Join(tmp, "rtr7-build-kernel")
+	buildPath := filepath.Join(tmp, "amd64-build-kernel")
 
 	var patchPaths []string
 	for _, filename := range patchFiles {
@@ -195,7 +195,7 @@ func main() {
 	dockerBuild := exec.Command(execName,
 		"build",
 		"--rm=true",
-		"--tag=rtr7-rebuild-kernel",
+		"--tag=amd64-rebuild-kernel",
 		".")
 	dockerBuild.Dir = tmp
 	dockerBuild.Stdout = os.Stdout
@@ -213,13 +213,13 @@ func main() {
 			"--userns=keep-id",
 			"--rm",
 			"--volume", tmp+":/tmp/buildresult:Z",
-			"rtr7-rebuild-kernel")
+			"amd64-rebuild-kernel")
 	} else {
 		dockerRun = exec.Command(executable,
 			"run",
 			"--rm",
 			"--volume", tmp+":/tmp/buildresult:Z",
-			"rtr7-rebuild-kernel")
+			"amd64-rebuild-kernel")
 	}
 	dockerRun.Dir = tmp
 	dockerRun.Stdout = os.Stdout
