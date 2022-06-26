@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func downloadKernel() error {
@@ -74,11 +75,11 @@ func compile() error {
 	defer f.Close()
 
 	// create addendum to be updated in .config
-	configAddendum := []byte{}
+	configAddendum := []string{}
 	for k, v := range configAddendumMap {
-		configAddendum = append(configAddendum, []byte(k+"="+v)...)
+		configAddendum = append(configAddendum, k+"="+v)
 	}
-	if _, err := f.Write(configAddendum); err != nil {
+	if _, err := fmt.Fprintln(f, strings.Join(configAddendum, "\n")); err != nil {
 		return err
 	}
 	if err := f.Close(); err != nil {
@@ -96,7 +97,7 @@ func compile() error {
 	make.Env = append(os.Environ(),
 		"KBUILD_BUILD_USER=gokrazy",
 		"KBUILD_BUILD_HOST=worker.thatwebsite.xyz",
-		"KBUILD_BUILD_TIMESTAMP=Wed Mar  1 20:57:29 UTC 2017",
+		"KBUILD_BUILD_TIMESTAMP="+time.Now().UTC().Format(time.UnixDate),
 	)
 	make.Stdout = os.Stdout
 	make.Stderr = os.Stderr
