@@ -5,6 +5,7 @@ var configAddendumMap = map[string]string{
 
 	"CONFIG_IPV6":          "y",
 	"CONFIG_DYNAMIC_DEBUG": "y",
+	"CONFIG_THERMAL":       "y",
 
 	// # For Squashfs (root file system):
 	"CONFIG_SQUASHFS":                     "y",
