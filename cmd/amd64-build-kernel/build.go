@@ -93,12 +93,21 @@ func compile() error {
 		return fmt.Errorf("make olddefconfig: %v", err)
 	}
 
-	make := exec.Command("make", "bzImage", "-j"+strconv.Itoa(runtime.NumCPU()))
-	make.Env = append(os.Environ(),
+	make := exec.Command("make", "bzImage", "modules", "-j"+strconv.Itoa(runtime.NumCPU()))
+	env := append(os.Environ(),
 		"KBUILD_BUILD_USER=gokrazy",
 		"KBUILD_BUILD_HOST=worker.thatwebsite.xyz",
 		"KBUILD_BUILD_TIMESTAMP="+time.Now().UTC().Format(time.UnixDate),
 	)
+	make.Env = env
+	make.Stdout = os.Stdout
+	make.Stderr = os.Stderr
+	if err := make.Run(); err != nil {
+		return fmt.Errorf("make: %v", err)
+	}
+
+	make = exec.Command("make", "INSTALL_MOD_PATH=/tmp/buildresult", "modules_install", "-j"+strconv.Itoa(runtime.NumCPU()))
+	make.Env = env
 	make.Stdout = os.Stdout
 	make.Stderr = os.Stderr
 	if err := make.Run(); err != nil {

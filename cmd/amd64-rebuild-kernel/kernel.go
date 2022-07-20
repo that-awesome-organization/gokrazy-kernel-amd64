@@ -17,7 +17,7 @@ import (
 const dockerFileContents = `
 FROM debian:stretch
 
-RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex libelf-dev ncurses-dev
+RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex kmod libelf-dev ncurses-dev
 
 COPY amd64-build-kernel /usr/bin/amd64-build-kernel
 {{- range $idx, $path := .Patches }}
@@ -151,6 +151,11 @@ func main() {
 	}
 
 	kernelPath, err := find("vmlinuz")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	libPath, err := find("lib")
 	if err != nil {
 		log.Fatal(err)
 	}
