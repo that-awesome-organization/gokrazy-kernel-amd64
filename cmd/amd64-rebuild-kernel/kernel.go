@@ -17,7 +17,7 @@ import (
 const dockerFileContents = `
 FROM debian:stretch
 
-RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex libelf-dev ncurses-dev
+RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex kmod libelf-dev ncurses-dev
 
 COPY amd64-build-kernel /usr/bin/amd64-build-kernel
 {{- range $idx, $path := .Patches }}
@@ -155,6 +155,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	libPath, err := find("lib")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Copy all files into the temporary directory so that docker
 	// includes them in the build context.
 	for _, path := range patchPaths {
@@ -230,5 +235,32 @@ func main() {
 
 	if err := copyFile(kernelPath, filepath.Join(tmp, "vmlinuz")); err != nil {
 		log.Fatal(err)
+	}
+
+	// remove symlinks that only work when source/build directory are present
+	for _, subdir := range []string{"build", "source"} {
+		matches, err := filepath.Glob(filepath.Join(tmp, "lib/modules", "*", subdir))
+		if err != nil {
+			log.Fatal(err)
+		}
+		for _, match := range matches {
+			if err := os.Remove(match); err != nil {
+				log.Fatal(err)
+			}
+		}
+	}
+
+	// replace kernel modules directory
+	rm := exec.Command("rm", "-rf", filepath.Join(libPath, "modules"))
+	rm.Stdout = os.Stdout
+	rm.Stderr = os.Stderr
+	if err := rm.Run(); err != nil {
+		log.Fatalf("%v: %v", rm.Args, err)
+	}
+	cp := exec.Command("cp", "-r", filepath.Join(tmp, "lib/modules"), libPath)
+	cp.Stdout = os.Stdout
+	cp.Stderr = os.Stderr
+	if err := cp.Run(); err != nil {
+		log.Fatalf("%v: %v", cp.Args, err)
 	}
 }
