@@ -7,13 +7,14 @@ var configAddendumMap = map[string]string{
 	"CONFIG_DYNAMIC_DEBUG": "y",
 
 	// Thermals
-	"CONFIG_ACPI_THERMAL":       "y",
-	"CONFIG_THERMAL":            "y",
-	"CONFIG_MLXSW_CORE_THERMAL": "y",
-	"CONFIG_THERMAL_NETLINK":    "y",
-	"CONFIG_INTEL_HFI_THERMAL":  "y",
-	"CONFIG_DEVFREQ_THERMAL":    "y",
-	"CONFIG_INTEL_TH_ACPI":      "y",
+	"CONFIG_ACPI_THERMAL":         "y",
+	"CONFIG_THERMAL":              "y",
+	"CONFIG_MLXSW_CORE_THERMAL":   "y",
+	"CONFIG_THERMAL_NETLINK":      "y",
+	"CONFIG_INTEL_HFI_THERMAL":    "y",
+	"CONFIG_DEVFREQ_THERMAL":      "y",
+	"CONFIG_INTEL_TH_ACPI":        "y",
+	"CONFIG_X86_PKG_TEMP_THERMAL": "y",
 
 	// # For Squashfs (root file system):
 	"CONFIG_SQUASHFS":                     "y",
