@@ -266,6 +266,7 @@ kernel/drivers/hwmon/hwmon.ko
 kernel/drivers/hwmon/corsair-cpro.ko
 kernel/drivers/hwmon/k10temp.ko
 kernel/drivers/hwmon/nct6683.ko
+kernel/drivers/thermal/intel/x86_pkg_temp_thermal.ko
 kernel/drivers/watchdog/watchdog.ko
 kernel/drivers/watchdog/sp5100_tco.ko
 kernel/drivers/watchdog/i6300esb.ko

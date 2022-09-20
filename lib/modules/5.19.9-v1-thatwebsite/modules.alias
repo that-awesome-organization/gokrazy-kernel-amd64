@@ -7,7 +7,6 @@ alias pci:v000010ECd0000C821sv*sd*bc*sc*i* rtw88_8821ce
 alias pci:v000010ECd0000B821sv*sd*bc*sc*i* rtw88_8821ce
 alias pci:v000010ECd0000A85Asv*sd*bc*sc*i* rtw89_8852ae
 alias pci:v000010ECd00008852sv*sd*bc*sc*i* rtw89_8852ae
-alias cpu:type:x86,ven0000fam*mod*:feature:*01C6* x86_pkg_temp_thermal
 alias nf-logger-10-0 nf_log_syslog
 alias nf-logger-5-0 nf_log_syslog
 alias nf-logger-3-0 nf_log_syslog
