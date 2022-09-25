@@ -168,6 +168,9 @@ var configAddendumMap = map[string]string{
 	"CONFIG_X86_POWERNOW_K8":                "y",
 	"CONFIG_X86_AMD_FREQ_SENSITIVITY":       "y",
 
+	// Power Cap for RAPL
+	"CONFIG_POWERCAP": "y",
+
 	// # Include hardware interrupt CPU usage in /proc/stat CPU time reporting:
 	"CONFIG_IRQ_TIME_ACCOUNTING": "y",
 
