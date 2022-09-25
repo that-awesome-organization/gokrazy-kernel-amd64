@@ -169,7 +169,11 @@ var configAddendumMap = map[string]string{
 	"CONFIG_X86_AMD_FREQ_SENSITIVITY":       "y",
 
 	// Power Cap for RAPL
-	"CONFIG_POWERCAP": "y",
+	"CONFIG_POWERCAP":               "y",
+	"CONFIG_PERF_EVENTS_INTEL_RAPL": "y",
+	"CONFIG_PROC_THERMAL_MMIO_RAPL": "y",
+	"CONFIG_INTEL_RAPL_CORE":        "y",
+	"CONFIG_INTEL_RAPL":             "y",
 
 	// # Include hardware interrupt CPU usage in /proc/stat CPU time reporting:
 	"CONFIG_IRQ_TIME_ACCOUNTING": "y",
