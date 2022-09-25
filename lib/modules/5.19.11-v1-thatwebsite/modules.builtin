@@ -315,6 +315,8 @@ kernel/drivers/hid/hid-topseed.ko
 kernel/drivers/hid/usbhid/usbhid.ko
 kernel/drivers/platform/x86/eeepc-laptop.ko
 kernel/drivers/powercap/powercap_sys.ko
+kernel/drivers/powercap/intel_rapl_common.ko
+kernel/drivers/powercap/intel_rapl_msr.ko
 kernel/drivers/nvmem/nvmem_core.ko
 kernel/sound/soundcore.ko
 kernel/sound/core/snd.ko
