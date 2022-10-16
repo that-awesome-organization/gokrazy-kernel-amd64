@@ -133,7 +133,7 @@ func getContainerExecutable() (string, error) {
 
 func main() {
 	flag.Parse()
-
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	updateVersion()
 	if !*dobuild {
 		return
