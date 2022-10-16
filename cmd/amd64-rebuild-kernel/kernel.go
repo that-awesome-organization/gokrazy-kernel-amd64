@@ -135,8 +135,14 @@ func getContainerExecutable() (string, error) {
 func main() {
 	flag.Parse()
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	updateVersion()
-	if !*dobuild {
+	err := updateVersion()
+	if err != nil && err.Error() != "no change" {
+		log.Fatal(err)
+
+	}
+
+	if err.Error() == "no change" && !*dobuild {
+		log.Println("No changes found, skipping the build")
 		return
 	}
 
@@ -312,15 +318,15 @@ func pushBuild() error {
 	return nil
 }
 
-func updateVersion() {
+func updateVersion() error {
 	r, err := http.Get(releasesURL)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	var resp ReleasesResponse
 	defer r.Body.Close()
 	if err := json.NewDecoder(r.Body).Decode(&resp); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	downloadURL := ""
@@ -336,26 +342,35 @@ func updateVersion() {
 	// update gokr-build-kernel in development branch
 	d, err := os.Create(path.Join(*buildPath, "url.go"))
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	defer d.Close()
 
 	t, err := template.New("url.go").Parse(urlTemplate)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := t.ExecuteTemplate(d, "url.go", downloadURL); err != nil {
-		log.Fatal(err)
+		return err
+	}
+
+	if o, err := exec.Command("git", "status", "--short", "cmd/amd64-build-kernel/url.go").CombinedOutput(); err != nil {
+		log.Println(string(o[:]))
+		return err
+	} else {
+		if strings.TrimSpace(string(o[:])) == "" {
+			return fmt.Errorf("no change")
+		}
 	}
 
 	// commit it
 	if err := exec.Command("git", "checkout", "development").Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if err := exec.Command("git", "add", path.Join(*buildPath, "url.go")).Run(); err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if o, err := exec.Command("git", "commit", "-m", fmt.Sprintf("Upgrade to version %s", latestVersion)).CombinedOutput(); err != nil {
@@ -366,12 +381,12 @@ func updateVersion() {
 
 	if o, err := exec.Command("git", "push", "origin", "development").CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
-		log.Fatal(err)
+		return err
 	}
 
 	if o, err := exec.Command("git", "checkout", "-B", fmt.Sprintf("build-%s", latestVersion)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
-		log.Fatal(err)
+		return err
 	}
 
 	if !*dobuild {
@@ -380,8 +395,9 @@ func updateVersion() {
 		fmt.Printf("Execute `go run %s` to build the kernel\n", path.Join(path.Dir(*buildPath), "amd64-rebuild-kernel", "kernel.go"))
 		fmt.Println()
 		fmt.Println("*********************************")
-		return
+		return nil
 	}
+	return nil
 }
 
 type ReleasesResponse struct {
