@@ -305,7 +305,7 @@ func pushBuild() error {
 		log.Println("ignoring exit code 1")
 	}
 
-	if o, err := exec.Command("git", "push").CombinedOutput(); err != nil {
+	if o, err := exec.Command("git", "push", "origin", fmt.Sprintf("build-%s", latestVersion)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
 		return err
 	}
@@ -358,18 +358,18 @@ func updateVersion() {
 		log.Fatal(err)
 	}
 
-	if o, err := exec.Command("git", "commit", "-m", fmt.Sprintf("Upgrade to version %s", resp.LatestStable.Version)).CombinedOutput(); err != nil {
+	if o, err := exec.Command("git", "commit", "-m", fmt.Sprintf("Upgrade to version %s", latestVersion)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
 		// log.Fatal(err)
 		log.Println("ignoring exit code 1")
 	}
 
-	if o, err := exec.Command("git", "push").CombinedOutput(); err != nil {
+	if o, err := exec.Command("git", "push", "origin", "development").CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
 		log.Fatal(err)
 	}
 
-	if o, err := exec.Command("git", "checkout", "-B", fmt.Sprintf("build-%s", resp.LatestStable.Version)).CombinedOutput(); err != nil {
+	if o, err := exec.Command("git", "checkout", "-B", fmt.Sprintf("build-%s", latestVersion)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
 		log.Fatal(err)
 	}
