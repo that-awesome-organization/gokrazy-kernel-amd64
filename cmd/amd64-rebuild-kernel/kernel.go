@@ -335,7 +335,8 @@ func updateVersion() {
 
 	if o, err := exec.Command("git", "commit", "-m", fmt.Sprintf("Upgrade to version %s", resp.LatestStable.Version)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
-		log.Fatal(err)
+		// log.Fatal(err)
+		log.Println("ignoring exit code 1")
 	}
 
 	if o, err := exec.Command("git", "push").CombinedOutput(); err != nil {
