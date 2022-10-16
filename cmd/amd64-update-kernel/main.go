@@ -78,6 +78,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if o, err := exec.Command("git", "push").CombinedOutput(); err != nil {
+		log.Println(string(o[:]))
+		log.Fatal(err)
+	}
+
 	if o, err := exec.Command("git", "checkout", "-B", fmt.Sprintf("build-%s", resp.LatestStable.Version)).CombinedOutput(); err != nil {
 		log.Println(string(o[:]))
 		log.Fatal(err)
