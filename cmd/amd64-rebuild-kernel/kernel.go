@@ -138,10 +138,9 @@ func main() {
 	err := updateVersion()
 	if err != nil && err.Error() != "no change" {
 		log.Fatal(err)
-
 	}
 
-	if err.Error() == "no change" && !*dobuild {
+	if err != nil && err.Error() == "no change" {
 		log.Println("No changes found, skipping the build")
 		return
 	}
@@ -359,7 +358,7 @@ func updateVersion() error {
 		log.Println(string(o[:]))
 		return err
 	} else {
-		if strings.TrimSpace(string(o[:])) == "" {
+		if !*dobuild && strings.TrimSpace(string(o[:])) == "" {
 			return fmt.Errorf("no change")
 		}
 	}
