@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	latestVersion                = "latest"
 	overwriteContainerExecutable = flag.String("overwrite_container_executable",
 		"",
 		"E.g. docker or podman to overwrite the automatically detected container executable")
@@ -287,6 +288,28 @@ func main() {
 	if err := cp.Run(); err != nil {
 		log.Fatalf("%v: %v", cp.Args, err)
 	}
+
+	if err := pushBuild(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func pushBuild() error {
+	if err := exec.Command("git", "add", ".").Run(); err != nil {
+		return err
+	}
+
+	if o, err := exec.Command("git", "commit", "-m", fmt.Sprintf("Built to version %s", latestVersion)).CombinedOutput(); err != nil {
+		log.Println(string(o[:]))
+		// log.Fatal(err)
+		log.Println("ignoring exit code 1")
+	}
+
+	if o, err := exec.Command("git", "push").CombinedOutput(); err != nil {
+		log.Println(string(o[:]))
+		return err
+	}
+	return nil
 }
 
 func updateVersion() {
@@ -307,8 +330,10 @@ func updateVersion() {
 			break
 		}
 	}
-	// update gokr-build-kernel in development branch
 
+	latestVersion = resp.LatestStable.Version
+
+	// update gokr-build-kernel in development branch
 	d, err := os.Create(path.Join(*buildPath, "url.go"))
 	if err != nil {
 		log.Fatal(err)
