@@ -111,6 +111,10 @@ var configAddendumMap = map[string]string{
 	// # For apu2c4 ethernet ports
 	"CONFIG_IGB": "y",
 
+	// # For Qualcomm Atheros Fast Ethernet
+	"CONFIG_ATL1C": "y",
+	"CONFIG_ATL2": "y",
+
 	// # For Intel I225 ethernet ports (ASRock B550 Taichi):
 	"CONFIG_IGC": "y",
 
@@ -238,6 +242,8 @@ var configAddendumMap = map[string]string{
 	"CONFIG_RTC_DRV_DS3232_HWMON":        "y",
 	"CONFIG_RTC_DRV_RV3029_HWMON":        "y",
 
+	"CONFIG_ATH9K":         "y",
+	"CONFIG_ATH9K_AHB":     "y",
 	"CONFIG_RTW88":         "m",
 	"CONFIG_RTW88_CORE":    "m",
 	"CONFIG_RTW88_PCI":     "m",
