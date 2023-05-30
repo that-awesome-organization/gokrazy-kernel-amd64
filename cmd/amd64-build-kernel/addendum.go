@@ -264,6 +264,9 @@ var configAddendumMap = map[string]string{
 	"CONFIG_RTW89_8852AE":  "m",
 	"CONFIG_RTW89_DEBUG":   "m",
 
+        // # Extras
+        "CONFIG_IDEAPAD_LAPTOP": "y",
+
 	// # Linux 6.1:
 	// In file included from <command-line>:0:0:
 	// drivers/gpu/drm/i915/i915_sw_fence_work.c: In function 'dma_fence_work_init':
