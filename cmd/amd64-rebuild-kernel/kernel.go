@@ -37,7 +37,7 @@ const (
 	releasesURL = "https://www.kernel.org/releases.json"
 )
 const dockerFileContents = `
-FROM debian:stretch
+FROM debian:buster
 
 RUN apt-get update && apt-get install -y crossbuild-essential-arm64 bc libssl-dev bison flex kmod libelf-dev ncurses-dev
 
