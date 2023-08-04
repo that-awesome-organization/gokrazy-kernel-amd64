@@ -112,7 +112,7 @@ var configAddendumMap = map[string]string{
 	"CONFIG_IGB": "y",
 
         // # For RTL USB to Ethernet port
-        "CONFIG_USB_RTL8152": "y"
+        "CONFIG_USB_RTL8152": "y",
 
 	// # For Qualcomm Atheros Fast Ethernet
 	"CONFIG_ATL1C": "y",
