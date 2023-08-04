@@ -111,6 +111,9 @@ var configAddendumMap = map[string]string{
 	// # For apu2c4 ethernet ports
 	"CONFIG_IGB": "y",
 
+        // # For RTL USB to Ethernet port
+        "CONFIG_USB_RTL8152": "y"
+
 	// # For Qualcomm Atheros Fast Ethernet
 	"CONFIG_ATL1C": "y",
 	"CONFIG_ATL2": "y",
